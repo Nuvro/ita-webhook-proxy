@@ -15,7 +15,7 @@ const WEBHOOK_URL = process.env.WEBHOOK_URL; // Set this in Koyeb
 
 // Rate limiter to allow a maximum of 10 requests per minute
 const limiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute window
+    windowMs: 1000, // 1 s window
     max: 10, // Limit each IP to 10 requests per windowMs
     message: "Too many requests, please try again later.", // Custom rate limit message
 });
