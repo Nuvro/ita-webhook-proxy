@@ -2,10 +2,11 @@ const express = require('express');
 const rateLimit = require('express-rate-limit');
 const axios = require('axios'); // or any other HTTP client for sending requests
 
-app.set('trust proxy', true);
-
 const app = express();
 app.use(express.json());
+
+app.set('trust proxy', true);
+
 
 // Create a queue to store messages that need to be sent
 let messageQueue = [];
