@@ -5,7 +5,7 @@ require("dotenv").config();
 const app = express();
 app.use(express.json());
 
-const WEBHOOK_URL = process.env.WEBHOOK_URL; // Set this in Koyeb
+const WEBHOOK_URL = process.env.WEBHOOK_URL;
 
 app.post("/webhook", async (req, res) => {
     try {
