@@ -1,75 +1,40 @@
-const express = require('express');
-const rateLimit = require('express-rate-limit');
-const axios = require('axios'); // or any other HTTP client for sending requests
+const express = require("express");
+const axios = require("axios");
+require("dotenv").config();
+const rateLimit = require("express-rate-limit");
 
 const app = express();
+
+// Parse incoming JSON requests
 app.use(express.json());
 
-app.set('trust proxy', 1); // Trust the first proxy (Koyeb)
+// Webhook URL from environment variables
+const WEBHOOK_URL = process.env.WEBHOOK_URL; // Set this in Koyeb
 
-const WEBHOOK_URL = process.env.WEBHOOK_URL; // Set in Koyeb
-
-// Create a queue to store messages that need to be sent
-let messageQueue = [];
-
-// Rate limiter configuration: Limit to 10 requests per second
+// Rate limiter to allow a maximum of 10 requests per minute
 const limiter = rateLimit({
-  windowMs: 1000, // 1 second
-  max: 10, // Limit to 10 requests per second
-  message: 'Too many requests, please try again later.',
+    windowMs: 60 * 1000, // 1 minute window
+    max: 10, // Limit each IP to 10 requests per windowMs
+    message: "Too many requests, please try again later.", // Custom rate limit message
 });
 
-// Apply the rate limiter globally
-app.use(limiter);
+// Apply the rate limiter to all POST requests to /webhook
+app.use("/webhook", limiter);
 
-// Function to send a message to Discord or any other destination
-const sendMessage = async (message) => {
-  try {
-    // Replace this with your actual code to send a message to Discord
-    const response = await axios.post(WEBHOOK_URL, {
-      content: message,
-    });
-
-    console.log(`Message sent: ${message}`);
-    return response;
-  } catch (error) {
-    console.error(`Failed to send message: ${error}`);
-  }
-};
-
-// Process the message queue
-const processQueue = async () => {
-  if (messageQueue.length > 0) {
-    const message = messageQueue.shift(); // Get the first message from the queue
-    await sendMessage(message); // Send the message
-
-    // Delay the next request to maintain the rate limit
-    setTimeout(processQueue, 100); // 100ms delay between processing the next message
-  }
-};
-
-// Route to handle incoming webhooks
-app.post('/webhook', (req, res) => {
-  const message = req.body.content; // Adjust depending on how your data is sent
-
-  if (message) {
-    // Add the message to the queue
-    messageQueue.push(message);
-    console.log(`Message added to queue: ${message}`);
-
-    // If queue is not being processed, start processing
-    if (messageQueue.length === 1) {
-      processQueue(); // Start processing the queue
+// Webhook endpoint to forward data to Discord
+app.post("/webhook", async (req, res) => {
+    try {
+        // Send the webhook data to Discord
+        await axios.post(WEBHOOK_URL, req.body);
+        res.status(200).send("Sent to Discord!");
+    } catch (error) {
+        console.error("Error sending webhook:", error);
+        res.status(500).send("Internal Server Error");
     }
-
-    res.status(200).send('Message queued for sending');
-  } else {
-    res.status(400).send('No message content found');
-  }
 });
 
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+    console.log(`✅ Server running on port ${PORT}`);
 });
