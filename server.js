@@ -5,6 +5,8 @@ const rateLimit = require("express-rate-limit");
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 // Parse incoming JSON requests
 app.use(express.json());
 
