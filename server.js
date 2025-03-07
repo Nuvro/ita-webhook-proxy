@@ -5,7 +5,7 @@ const axios = require('axios'); // or any other HTTP client for sending requests
 const app = express();
 app.use(express.json());
 
-app.set('trust proxy', true);
+app.set('trust proxy', 1); // Trust the first proxy (Koyeb)
 
 
 // Create a queue to store messages that need to be sent
