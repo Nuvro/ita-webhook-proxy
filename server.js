@@ -7,6 +7,7 @@ app.use(express.json());
 
 app.set('trust proxy', 1); // Trust the first proxy (Koyeb)
 
+const WEBHOOK_URL = process.env.WEBHOOK_URL; // Set in Koyeb
 
 // Create a queue to store messages that need to be sent
 let messageQueue = [];
@@ -25,7 +26,7 @@ app.use(limiter);
 const sendMessage = async (message) => {
   try {
     // Replace this with your actual code to send a message to Discord
-    const response = await axios.post('YOUR_DISCORD_WEBHOOK_URL', {
+    const response = await axios.post(WEBHOOK_URL, {
       content: message,
     });
 
